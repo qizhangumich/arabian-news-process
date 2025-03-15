@@ -1,0 +1,64 @@
+name: Daily News Processing Automation
+
+on:
+  schedule:
+    # Runs at 11:30 PM UAE time (UTC+4), which is 7:30 PM UTC
+    - cron: '30 19 * * *'
+  workflow_dispatch:  # Allow manual triggering for testing
+
+jobs:
+  process-news:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch complete history
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install firebase-admin openai python-dateutil pytz
+
+      - name: Set up Firebase credentials
+        env:
+          FIREBASE_KEY_JSON: ${{ secrets.FIREBASE_KEY_JSON }}
+        run: |
+          echo "$FIREBASE_KEY_JSON" > ./firebase_key.json
+          # Verify file was created (without showing sensitive content)
+          if [ -f "./firebase_key.json" ]; then
+            echo "Firebase credentials file created successfully"
+          else
+            echo "Failed to create Firebase credentials file"
+            exit 1
+          fi
+
+      - name: Run news processing script
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          # Update OpenAI API key in script (if not using env var)
+          python script.py
+          echo "News processing complete"
+
+      - name: Commit and push changes
+        run: |
+          # Configure Git
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          
+          # Add all changes (including processed news data)
+          git add -A
+          
+          # Commit with today's date
+          git commit -m "Daily news update: $(date +'%Y-%m-%d')" || echo "No changes to commit"
+          
+          # Push changes back to repository
+          git push 

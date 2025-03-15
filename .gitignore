@@ -1,0 +1,24 @@
+# Ignore sensitive files with credentials
+firebase_key.json
+key_for_ai.txt
+openai_credential.png
+*_credential*.*
+*.key
+*.pem
+*.env
+
+# Ignore temporary directories created during this process
+temp_repo/
+temp_clone/
+news_repo/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Ignore log files
+*.log 
