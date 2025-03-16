@@ -2,8 +2,8 @@ name: Daily News Processing Automation
 
 on:
   schedule:
-    # Runs at 11:30 PM UAE time (UTC+4), which is 7:30 PM UTC
-    - cron: '30 19 * * *'
+    # Runs at 12:30 AM UAE time (UTC+4), which is 8:30 PM UTC
+    - cron: '30 20 * * *'
   workflow_dispatch:  # Allow manual triggering for testing
 
 permissions:
