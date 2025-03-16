@@ -38,14 +38,14 @@ def initialize_firebase():
         if os.path.exists(cred_path):
             try:
                 # Check if file is valid JSON first
-                with open(cred_path, 'r') as f:
+                with open(cred_path, 'r', encoding='utf-8-sig') as f:
                     try:
                         json_content = json.load(f)
                         print(f"✅ Firebase key file is valid JSON")
                     except json.JSONDecodeError as json_err:
                         print(f"⚠️ Firebase key file contains invalid JSON: {json_err}")
                         # Try to diagnose the issue by printing part of the file (without sensitive info)
-                        with open(cred_path, 'r') as debug_f:
+                        with open(cred_path, 'r', encoding='utf-8-sig') as debug_f:
                             first_lines = debug_f.readlines()[:5]  # Just read the first few lines
                             print(f"First few lines of the file structure (sanitized):")
                             for i, line in enumerate(first_lines):
@@ -71,12 +71,12 @@ def initialize_firebase():
             firebase_key_base64 = os.environ.get("FIREBASE_KEY_JSON")
             if firebase_key_base64:
                 # Write the key to a temporary file
-                with open(cred_path, 'w') as f:
+                with open(cred_path, 'w', encoding='utf-8-sig') as f:
                     f.write(firebase_key_base64)
                 
                 # Verify the file is valid JSON before proceeding
                 try:
-                    with open(cred_path, 'r') as f:
+                    with open(cred_path, 'r', encoding='utf-8-sig') as f:
                         json.load(f)
                 except json.JSONDecodeError as e:
                     print(f"Error: Firebase key from environment variable is not valid JSON: {e}")
@@ -291,6 +291,24 @@ def process_news_articles(news_items):
     
     return processed_news
 
+def delete_historical_data(db):
+    """Delete all existing data in the processed news collection."""
+    print(f"\nDeleting all historical data from '{PROCESSED_COLLECTION}'...")
+    
+    processed_ref = db.collection(PROCESSED_COLLECTION)
+    
+    # Get all documents in the collection
+    docs = processed_ref.stream()
+    
+    # Delete each document
+    delete_count = 0
+    for doc in docs:
+        doc.reference.delete()
+        delete_count += 1
+    
+    print(f"✅ Successfully deleted {delete_count} historical news articles.")
+    return delete_count
+
 def save_processed_news_to_firebase(db, processed_news):
     """Save processed news articles with ratings, summaries and translations to Firebase."""
     if not processed_news:
@@ -411,6 +429,9 @@ def main():
             if 'summary_chinese' in article:
                 print(f"中文摘要 (Chinese Summary): {article.get('summary_chinese')}")
             print("="*50)
+        
+        # Delete all historical data before saving new data
+        delete_historical_data(db)
         
         # Save the processed news to Firebase
         save_processed_news_to_firebase(db, processed_news)
