@@ -198,8 +198,8 @@ def translate_to_chinese(text):
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a professional translator. Translate the following text to Simplified Chinese (Mandarin)."},
-                {"role": "user", "content": f"Please translate this text to Chinese:\n\n{text}"}
+                {"role": "system", "content": "You are a professional translator. Translate the following text to Simplified Chinese (Mandarin). Only respond with the translation, no additional text."},
+                {"role": "user", "content": f"Translate to Chinese:\n\n{text}"}
             ],
             max_tokens=300
         )
@@ -213,7 +213,7 @@ def translate_to_chinese(text):
             print("Trying fallback approach for translation...")
             response = client.completions.create(
                 model="gpt-3.5-turbo-instruct",
-                prompt=f"Translate this text to Chinese:\n\n{text}",
+                prompt=f"Translate to Chinese:\n\n{text}",
                 max_tokens=300
             )
             translation = response.choices[0].text.strip()
@@ -421,13 +421,13 @@ def main():
             print("\n" + "="*50)
             print(f"Title: {article.get('title', 'No title')}")
             if 'title_chinese' in article:
-                print(f"中文标题 (Chinese Title): {article.get('title_chinese')}")
+                print(f"Chinese Title: {article.get('title_chinese')}")
             if 'date_published' in article:
                 print(f"Date: {article.get('date_published')}")
             print(f"Business Importance: {article.get('business_importance', 'N/A')} (1=most important, 10=least important)")
             print(f"Summary: {article.get('summary', 'N/A')}")
             if 'summary_chinese' in article:
-                print(f"中文摘要 (Chinese Summary): {article.get('summary_chinese')}")
+                print(f"Chinese Summary: {article.get('summary_chinese')}")
             print("="*50)
         
         # Delete all historical data before saving new data
